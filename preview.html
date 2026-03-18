@@ -460,7 +460,7 @@ function arrivedHTML() {
       <div class="info-row"><span class="info-label">Recycling (est.)</span><span class="info-value" style="color:var(--color-warning)">--</span></div>
       <div class="info-row"><span class="info-label">Sold Complete</span><span class="info-value" style="color:#8b5cf6">--</span></div>
       <div class="info-row"><span class="info-label">Scrap (est.)</span><span class="info-value">--</span></div>
-    </div>`;
+    </div>` + workflowHistoryHTML('arrived');
 }
 function arrivedFooter() {
   return `
@@ -468,6 +468,62 @@ function arrivedFooter() {
     <div style="display:flex;gap:8px;">
       <button class="btn btn--success" id="dispatchBtn" disabled onclick="alert('Dispatch: send vehicle directly to selected destination')">Dispatch →</button>
       <button class="btn btn--primary" onclick="alert('Move to Processing for inspection & depollution')">Move to Processing →</button>
+    </div>`;
+}
+
+function workflowHistoryHTML(stage) {
+  const arrivedDone = true;
+  const processingDone = stage === 'processing';
+  return `
+    <div class="section-title" style="margin-top:16px;">Workflow History</div>
+    <div style="border:1px solid var(--border-light);border-radius:var(--radius-lg);overflow:hidden;">
+      <!-- Arrived -->
+      <div style="border-bottom:1px solid var(--border-lighter);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;${arrivedDone ? 'background:var(--bg-card-hover);' : ''}" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">🚗</span>
+            <span style="font-size:13px;font-weight:600;">Arrived</span>
+            ${arrivedDone ? '<span style="font-size:10px;font-weight:600;color:var(--color-success);background:#dcfce7;padding:1px 6px;border-radius:3px;">Completed</span>' : '<span style="font-size:10px;font-weight:600;color:var(--brand-primary);background:color-mix(in srgb, var(--brand-primary) 12%, transparent);padding:1px 6px;border-radius:3px;">Current</span>'}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:10px;color:var(--text-muted);">23h 9m</span>
+            <span style="font-size:12px;color:var(--text-muted);">∨</span>
+          </div>
+        </div>
+        <div style="display:none;padding:10px 14px;background:var(--bg-card-hover);border-top:1px solid var(--border-lighter);font-size:11px;color:var(--text-muted);">
+          <div style="margin-bottom:6px;">🕐 16 Mar 26 01:31 pm → 17 Mar 26 12:40 pm</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:11px;">
+            <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-lighter);"><span>Brand</span><span style="font-weight:600;color:var(--text-heading);">Hyundai</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-lighter);"><span>Model</span><span style="font-weight:600;color:var(--text-heading);">i40</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-lighter);"><span>Year</span><span style="font-weight:600;color:var(--text-heading);">2014</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-lighter);"><span>Body</span><span style="font-weight:600;color:var(--text-heading);">Wagon</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-lighter);"><span>Rego</span><span style="font-weight:600;color:var(--text-heading);">S730BML</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-lighter);"><span>State</span><span style="font-weight:600;color:var(--text-heading);">SA</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Key</span><span style="font-weight:600;color:var(--color-success);">Yes</span></div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Papers</span><span style="font-weight:600;color:var(--color-success);">Yes</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Processing -->
+      <div style="border-bottom:1px solid var(--border-lighter);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;${processingDone ? '' : 'opacity:0.5;'}">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">🔧</span>
+            <span style="font-size:13px;font-weight:600;">Processing</span>
+            ${processingDone ? '<span style="font-size:10px;font-weight:600;color:var(--brand-primary);background:color-mix(in srgb, var(--brand-primary) 12%, transparent);padding:1px 6px;border-radius:3px;">In Progress</span><span style="font-size:10px;color:var(--text-muted);margin-left:4px;">9/17 items · 0/8 photos</span>' : '<span style="font-size:10px;color:var(--text-muted);">Pending</span>'}
+          </div>
+        </div>
+      </div>
+      <!-- Dispatched -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;opacity:0.35;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">📦</span>
+            <span style="font-size:13px;font-weight:600;">Dispatched</span>
+            <span style="font-size:10px;color:var(--text-muted);">—</span>
+          </div>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -553,7 +609,7 @@ function processingHTML() {
           <textarea placeholder="Describe any damage, missing parts, or special notes..." style="width:100%;padding:8px;border:1px solid var(--border-light);border-radius:var(--radius-md);font-size:12px;resize:vertical;min-height:60px;font-family:inherit;"></textarea>
         </div>
       </div>
-    </div>`;
+    </div>` + workflowHistoryHTML('processing');
 }
 function processingFooter() {
   return `

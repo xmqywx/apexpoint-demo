@@ -128,45 +128,34 @@
       <span class="change-title">Merge Inspect + Depollute into one step</span>
     </div>
     <div class="change-body">
-      Combine into a <strong>single "Inspect & Depollute" stage</strong> using collapsible accordion sections (like Workflow History). Each section shows a header with completion status — tap to expand. <strong>All sections visible on one screen without scrolling.</strong>
+      Merge Inspect and Depollute into one <strong>"Processing"</strong> stage. Remove Decision as a separate stage — <strong>destination becomes a vehicle attribute</strong> selectable at any time (Arrived or Processing). Pipeline goes from 4 columns to <strong>2 columns</strong>.
     </div>
     <div class="flow">
       <span class="flow-step active">Arrived</span><span class="flow-arrow">→</span>
       <span class="flow-step removed">Inspect</span><span class="flow-arrow">→</span>
       <span class="flow-step removed">Depollute</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Decision</span>
+      <span class="flow-step removed">Decision</span>
     </div>
     <div style="text-align:center;color:#6f6e77;font-size:12px;margin:4px 0;">▼ becomes ▼</div>
     <div class="flow">
       <span class="flow-step active">Arrived</span><span class="flow-arrow">→</span>
-      <span class="flow-step new">Inspect & Depollute</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Decision</span>
+      <span class="flow-step new">Processing (Inspect + Depollute)</span>
     </div>
     <div class="callout green">
-      <span>✅</span> 7 collapsible sections fit on one screen. Component Verification defaults to all YES — zero clicks for a standard vehicle. See demo above.
+      <span>✅</span> Destination (Parts/Recycling/Sold/Scrap) is always visible at the top of every vehicle panel. Select it anytime, then hit "Dispatch" when ready. No separate Decision step needed.
     </div>
   </div>
 
   <div class="change">
     <div class="change-header">
       <span class="change-id">1.2</span>
-      <span class="change-title">Pre-select destination from Arrived stage</span>
+      <span class="change-title">Destination is a vehicle attribute, not a pipeline step</span>
     </div>
     <div class="change-body">
-      <strong>Allow pre-selecting destination (Parts / Recycling / Sold / Scrap) at any stage.</strong> This only tags the vehicle — does not skip steps. Vehicle still follows normal flow.
+      Destination selector (Parts / Recycling / Sold / Scrap) is <strong>always visible at the top of every vehicle panel</strong>. Can be set at any time — Arrived or Processing. When destination is selected + vehicle is ready, click <strong>"Dispatch"</strong> to send it.
     </div>
     <div class="callout blue">
-      <span>💡</span> Example: A salesperson buys a car and knows it will be sold. They pre-select "Sold Complete" at arrival, but still complete inspection if needed.
-    </div>
-  </div>
-
-  <div class="change">
-    <div class="change-header">
-      <span class="change-id">1.3</span>
-      <span class="change-title">Allow direct dispatch (skip inspection)</span>
-    </div>
-    <div class="change-body">
-      From Arrived stage, <strong>directly send vehicle to destination</strong> without going through Inspect &amp; Depollute. For vehicles that don't need processing.
+      <span>💡</span> Two paths: (1) Set destination at Arrived → Dispatch immediately (skip processing). (2) Set destination → Move to Processing → Complete inspection → Dispatch.
     </div>
   </div>
 
@@ -340,8 +329,14 @@
   </div>
 
   <div class="change" style="border: 2px solid #f59e0b; background: #fffbeb;">
-    <div class="change-header"><span class="change-id orange">8.3</span><span class="change-title">Pipeline is flexible — Decision can happen at any stage</span></div>
-    <div class="change-body">The kanban still shows 3 columns (Arrived → Inspect & Depollute → Decision), but <strong>Decision is not locked to the third column</strong>. A vehicle can be dispatched directly from Arrived if inspection is not needed.</div>
+    <div class="change-header"><span class="change-id orange">8.3</span><span class="change-title">2-column pipeline with flexible dispatch — correct?</span></div>
+    <div class="change-body">The kanban has <strong>2 columns only: Arrived → Processing</strong>. Destination is set on the vehicle (not a separate step). Vehicle can be dispatched from either column once a destination is chosen.</div>
+    <div style="background:#fff;border-radius:8px;padding:14px;margin:10px 0;border:1px solid #e8e8e4;font-size:12px;">
+      <div style="margin-bottom:8px;font-weight:700;">Fast path (no inspection needed):</div>
+      <div style="color:#6f6e77;">Vehicle arrives → Set destination → Dispatch immediately</div>
+      <div style="margin:10px 0 8px;font-weight:700;">Standard path:</div>
+      <div style="color:#6f6e77;">Vehicle arrives → Move to Processing → Inspect & Depollute → Set destination → Dispatch</div>
+    </div>
     <div class="callout"><span>⚠️</span> <strong>Please confirm:</strong> Is this the intended workflow flexibility?</div>
   </div>
 </div>
@@ -374,9 +369,8 @@
   <table class="summary-table">
     <thead><tr><th>#</th><th>Change</th><th>Module</th><th>Priority</th></tr></thead>
     <tbody>
-      <tr><td>1.1</td><td>Merge Inspect + Depollute (accordion)</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
-      <tr><td>1.2</td><td>Pre-select destination from Arrived</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
-      <tr><td>1.3</td><td>Direct dispatch (skip inspection)</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>1.1</td><td>2-column pipeline: Arrived → Processing (merge inspect+depollute, remove Decision step)</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>1.2</td><td>Destination as vehicle attribute (selectable anytime, dispatch from any stage)</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
       <tr><td>1.4</td><td>Add "Complete Cars in Yard"</td><td>New Arrivals</td><td><span class="priority medium">Medium</span></td></tr>
       <tr><td>2.1</td><td>Source → Salesperson</td><td>New Arrivals</td><td><span class="priority medium">Medium</span></td></tr>
       <tr><td>2.2</td><td>Compact kanban cards (~20/screen)</td><td>New Arrivals</td><td><span class="priority medium">Medium</span></td></tr>

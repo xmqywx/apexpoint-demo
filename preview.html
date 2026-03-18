@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apexpoint — Proposed Changes Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-page: #f6f6f3; --bg-card: #fff; --bg-card-hover: #f5f5f2; --bg-input: #f0f0ec; --bg-card-subtle: #fafaf8;
+    --text-primary: #1a1523; --text-secondary: #6f6e77; --text-muted: #8b8a93; --text-heading: #1a1523;
+    --border-light: #e8e8e4; --border-lighter: #f0f0ec;
+    --brand-primary: #3b82f6; --color-success: #22c55e; --color-warning: #f59e0b; --color-error: #ef4444;
+    --stage-arrived: #3b82f6; --stage-inspect: #f59e0b; --stage-decision: #8b5cf6;
+    --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-xl: 10px;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.04);
+    --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg-page); color: var(--text-primary); }
+
+  /* ===== TOP NAV ===== */
+  .topbar { background: #fff; border-bottom: 1px solid var(--border-light); height: 48px; display: flex; align-items: center; padding: 0 20px; gap: 20px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+  .topbar__logo { display: flex; align-items: center; gap: 8px; }
+  .topbar__logo img { width: 26px; height: 26px; }
+  .topbar__logo span { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .topbar__tabs { display: flex; gap: 2px; background: var(--bg-input); padding: 3px; border-radius: 8px; }
+  .topbar__tab { padding: 5px 14px; font-size: 12px; font-weight: 500; color: var(--text-secondary); border-radius: 6px; cursor: pointer; border: none; background: none; }
+  .topbar__tab.active { background: var(--brand-primary); color: #fff; font-weight: 600; }
+  .topbar__tab.disabled { text-decoration: line-through; opacity: 0.35; cursor: not-allowed; }
+  .topbar__spacer { flex: 1; }
+  .topbar__demo-badge { background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 10px; }
+
+  /* ===== PAGE ===== */
+  .page { display: flex; flex-direction: column; height: calc(100vh - 48px); overflow: hidden; }
+
+  /* ===== SUBHEADER ===== */
+  .subheader { background: #fff; border-bottom: 1px solid var(--border-light); padding: 8px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .stat { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); font-weight: 500; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .stat:hover { background: var(--bg-card-hover); }
+  .stat__dot { width: 7px; height: 7px; border-radius: 50%; }
+  .stat b { color: var(--text-heading); margin-left: 2px; }
+  .divider { width: 1px; height: 20px; background: var(--border-light); }
+  .view-toggle { display: flex; background: var(--bg-input); border-radius: 8px; padding: 2px; }
+  .view-btn { padding: 4px 12px; font-size: 12px; font-weight: 500; color: var(--text-secondary); border: none; background: none; border-radius: 6px; cursor: pointer; }
+  .view-btn.active { background: #fff; font-weight: 600; color: var(--text-heading); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+
+  /* ===== CHANGE MARKERS ===== */
+  .change-marker { position: relative; }
+  .change-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff; font-size: 9px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; border: 2px solid #fff; }
+  .change-highlight { outline: 2px dashed #ef4444; outline-offset: 2px; border-radius: 8px; }
+  .change-note { background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 6px; display: inline-block; margin: 4px 0; }
+  .new-badge { background: #dcfce7; color: #166534; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+
+  /* ===== KANBAN ===== */
+  .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 16px; flex: 1; min-height: 0; overflow: hidden; }
+  .column { background: #fff; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; min-height: 0; }
+  .column__header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-lighter); flex-shrink: 0; }
+  .column__dot { width: 8px; height: 8px; border-radius: 3px; }
+  .column__title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); }
+  .column__count { font-size: 10px; font-weight: 600; color: var(--text-muted); background: var(--bg-input); padding: 2px 7px; border-radius: 10px; margin-left: auto; }
+  .column__body { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+
+  /* ===== VEHICLE CARD ===== */
+  .card { background: var(--bg-card-subtle); border-radius: var(--radius-lg); padding: 10px 12px; cursor: pointer; transition: all 0.15s; position: relative; }
+  .card:hover { background: var(--bg-card-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card__top { display: flex; gap: 10px; align-items: flex-start; }
+  .card__thumb { width: 44px; height: 34px; background: var(--bg-input); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+  .card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card__thumb-icon { color: var(--text-muted); font-size: 18px; }
+  .card__info { flex: 1; min-width: 0; }
+  .card__name { font-size: 13px; font-weight: 600; color: var(--text-heading); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card__ids { display: flex; gap: 5px; align-items: center; }
+  .card__stock { font-size: 10px; font-weight: 700; color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary) 12%, transparent); padding: 1px 6px; border-radius: 3px; font-family: var(--font-mono); }
+  .card__rego { font-size: 10px; font-weight: 600; color: var(--text-muted); font-family: var(--font-mono); }
+  .card__specs { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .card__meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 11px; color: var(--text-muted); }
+  .card__meta-icon { font-size: 13px; }
+  .card__time { position: absolute; top: 8px; right: 10px; font-size: 10px; color: var(--text-muted); }
+  .card__dest-tag { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-left: auto; }
+  .card__dest-tag.parts { background: #dcfce7; color: #166534; }
+  .card__dest-tag.recycling { background: #fef3c7; color: #92400e; }
+  .card__dest-tag.sold { background: #ede9fe; color: #6d28d9; }
+  .card__progress { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .card__progress-track { flex: 1; height: 4px; background: var(--bg-input); border-radius: 2px; overflow: hidden; }
+  .card__progress-fill { height: 100%; border-radius: 2px; }
+  .card__progress-pct { font-size: 10px; font-weight: 700; color: var(--text-secondary); font-family: var(--font-mono); }
+  .card__tags { display: flex; gap: 4px; margin-top: 4px; }
+  .card__tag { font-size: 9px; font-weight: 600; color: var(--color-success); }
+
+  /* ===== DRAWER ===== */
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 200; display: none; }
+  .drawer-overlay.open { display: block; }
+  .drawer { position: fixed; top: 0; right: -520px; width: 500px; height: 100vh; background: #fff; z-index: 201; box-shadow: -4px 0 24px rgba(0,0,0,0.1); display: flex; flex-direction: column; transition: right 0.25s ease; }
+  .drawer.open { right: 0; }
+  .drawer__header { padding: 14px 16px; border-bottom: 1px solid var(--border-light); flex-shrink: 0; position: relative; }
+  .drawer__title { font-size: 16px; font-weight: 700; }
+  .drawer__tags { display: flex; gap: 6px; margin-top: 6px; align-items: center; }
+  .drawer__tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); }
+  .drawer__tag.stock { background: color-mix(in srgb, var(--brand-primary) 12%, transparent); color: var(--brand-primary); }
+  .drawer__tag.rego { background: var(--bg-input); color: var(--text-secondary); }
+  .drawer__tag.stage { color: #fff; font-family: inherit; }
+  .drawer__close { position: absolute; top: 14px; right: 16px; border: none; background: none; font-size: 22px; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; }
+  .drawer__close:hover { background: var(--bg-input); }
+  .drawer__body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+  .drawer__footer { padding: 10px 16px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: #fff; }
+
+  /* ===== DEST SELECTOR ===== */
+  .dest-select { background: var(--bg-input); border-radius: var(--radius-lg); padding: 12px; margin-bottom: 14px; }
+  .dest-select__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .dest-select__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .dest-btn { padding: 10px 4px; border-radius: var(--radius-lg); border: 2px solid var(--border-light); background: #fff; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .dest-btn:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+  .dest-btn.selected { border-color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary) 6%, transparent); }
+  .dest-btn__icon { font-size: 22px; }
+  .dest-btn__name { font-size: 10px; font-weight: 600; color: var(--text-secondary); margin-top: 3px; }
+
+  /* ===== SECTION TITLE ===== */
+  .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 14px 0 6px; }
+
+  /* ===== INFO GRID ===== */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; font-size: 12px; }
+  .info-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border-lighter); }
+  .info-label { color: var(--text-muted); }
+  .info-value { font-weight: 600; text-align: right; }
+
+  /* ===== ACCORDION ===== */
+  .accordion { border: 1px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 12px; }
+  .acc-item { border-bottom: 1px solid var(--border-lighter); }
+  .acc-item:last-child { border-bottom: none; }
+  .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; transition: background 0.15s; user-select: none; }
+  .acc-header:hover { background: var(--bg-card-hover); }
+  .acc-header.expanded { background: var(--bg-input); }
+  .acc-arrow { color: var(--color-warning); font-size: 12px; margin-right: 8px; transition: transform 0.2s; display: inline-block; }
+  .acc-header.expanded .acc-arrow { transform: rotate(90deg); }
+  .acc-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; }
+  .acc-status { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+  .acc-status.done { color: var(--color-success); }
+  .acc-content { display: none; padding: 10px 14px; background: var(--bg-card-hover); }
+  .acc-content.show { display: block; }
+
+  /* ===== CHECK ROW ===== */
+  .check-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-lighter); }
+  .check-row:last-child { border-bottom: none; }
+  .check-label { font-size: 12px; color: var(--text-secondary); }
+  .toggle-group { display: flex; gap: 3px; }
+  .toggle-btn { padding: 3px 12px; border-radius: 4px; font-size: 10px; font-weight: 700; border: none; cursor: pointer; transition: all 0.15s; }
+  .toggle-btn.yes { background: var(--color-success); color: #fff; }
+  .toggle-btn.yes.off { background: var(--bg-input); color: var(--text-muted); }
+  .toggle-btn.no { background: var(--color-error); color: #fff; }
+  .toggle-btn.no.off { background: var(--bg-input); color: var(--text-muted); }
+
+  /* Status buttons */
+  .status-group { display: flex; gap: 2px; }
+  .status-btn { padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; border: none; cursor: pointer; background: var(--bg-input); color: var(--text-muted); transition: all 0.15s; }
+  .status-btn.active { background: var(--color-success); color: #fff; }
+
+  /* Photo grid */
+  .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .photo-cell { aspect-ratio: 4/3; background: var(--bg-input); border-radius: var(--radius-md); border: 1px dashed var(--border-light); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; transition: border-color 0.15s; }
+  .photo-cell:hover { border-color: var(--brand-primary); }
+  .photo-cell__icon { font-size: 18px; color: var(--text-muted); }
+  .photo-cell__label { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; }
+  .btn--primary { background: var(--brand-primary); color: #fff; }
+  .btn--primary:hover { filter: brightness(0.9); }
+  .btn--ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-light); }
+  .btn--ghost:hover { background: var(--bg-card-hover); }
+  .btn--success { background: var(--color-success); color: #fff; }
+
+  /* ===== DEMO BANNER ===== */
+  .demo-banner { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #fff; padding: 14px 24px; text-align: center; }
+  .demo-banner h1 { font-size: 18px; font-weight: 800; margin-bottom: 3px; }
+  .demo-banner p { font-size: 12px; opacity: 0.85; }
+
+  /* Change annotation */
+  .annotation { background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-lg); padding: 8px 12px; margin: 8px 0; font-size: 11px; color: #92400e; display: flex; align-items: flex-start; gap: 6px; }
+  .annotation--new { background: #dcfce7; border-color: #86efac; color: #166534; }
+  .annotation--remove { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+</style>
+</head>
+<body>
+
+<!-- Demo Banner -->
+<div class="demo-banner">
+  <h1>Apexpoint — Proposed UI Changes (Interactive Demo)</h1>
+  <p>Click any vehicle card to see the proposed panel design. Yellow annotations = changes from current version.</p>
+</div>
+
+<!-- Top Bar -->
+<nav class="topbar">
+  <div class="topbar__logo">
+    <span>Apexpoint</span>
+  </div>
+  <div class="topbar__tabs">
+    <button class="topbar__tab active">New Arrivals</button>
+    <button class="topbar__tab">Parts</button>
+    <button class="topbar__tab">Recycling</button>
+    <button class="topbar__tab disabled" title="Hidden in next update">Overseas</button>
+    <button class="topbar__tab">Sold Complete</button>
+    <button class="topbar__tab">Scrap</button>
+  </div>
+  <span class="topbar__spacer"></span>
+  <span class="topbar__demo-badge">DEMO</span>
+</nav>
+
+<div class="page">
+  <!-- Subheader -->
+  <div class="subheader">
+    <div class="stat"><span class="stat__dot" style="background:var(--stage-arrived)"></span> Arrived <b>6</b></div>
+    <div class="stat" style="position:relative;">
+      <span class="stat__dot" style="background:var(--stage-inspect)"></span> Inspect & Depollute <b>3</b>
+      <span class="new-badge" style="margin-left:4px;">MERGED</span>
+    </div>
+    <div class="stat"><span class="stat__dot" style="background:var(--stage-decision)"></span> Decision <b>2</b></div>
+    <div class="divider"></div>
+    <div class="view-toggle">
+      <button class="view-btn active">Kanban</button>
+      <button class="view-btn">List</button>
+    </div>
+  </div>
+
+  <!-- Kanban Board: 3 columns -->
+  <div class="kanban">
+
+    <!-- ===== ARRIVED ===== -->
+    <div class="column">
+      <div class="column__header">
+        <span class="column__dot" style="background:var(--stage-arrived)"></span>
+        <span class="column__title">Arrived</span>
+        <span class="column__count">6</span>
+      </div>
+      <div class="column__body">
+
+        <div class="card" onclick="openDrawer('arrived','2014 Hyundai i40','JAS-A0000087','S730BML')">
+          <span class="card__time">Yesterday</span>
+          <div class="card__top">
+            <div class="card__thumb"><img src="https://apexpoint.com.au/api//public/uploads/20260211/d953d140-06cc-11f1-b924-1be31050fa87.jpg"></div>
+            <div class="card__info">
+              <div class="card__name">2014 Hyundai i40</div>
+              <div class="card__ids"><span class="card__stock">JAS-A0000087</span><span class="card__rego">S730BML</span></div>
+            </div>
+          </div>
+          <div class="card__specs">G4NCEU950697 · 6-speed automatic</div>
+        </div>
+
+        <div class="card" onclick="openDrawer('arrived','2013 Toyota LandCruiser Prado','JAS-A0000088','S162AWT')">
+          <span class="card__time">Yesterday</span>
+          <div class="card__top">
+            <div class="card__thumb"><img src="https://apexpoint.com.au/api//public/uploads/20260211/43b1a150-06e8-11f1-8971-017250f88c91.jpg"></div>
+            <div class="card__info">
+              <div class="card__name">2013 Toyota LandCruiser Prado</div>
+              <div class="card__ids"><span class="card__stock">JAS-A0000088</span><span class="card__rego">S162AWT</span></div>
+            </div>
+          </div>
+          <div class="card__specs">1KD2278918 · 5-speed automatic</div>
+          <div class="card__meta"><span class="card__dest-tag sold">PRE: SOLD</span></div>
+        </div>
+
+        <div class="card" onclick="openDrawer('arrived','2010 Mercedes-Benz C-Class','WPYC-S0000081','EKA94A')">
+          <span class="card__time">Yesterday</span>
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">2010 Mercedes-Benz C-Class</div>
+              <div class="card__ids"><span class="card__stock">WPYC-S0000081</span><span class="card__rego">EKA94A</span></div>
+            </div>
+          </div>
+          <div class="card__specs">4 Cylinders, 1.8 Litre · Sports Automatic</div>
+        </div>
+
+        <div class="card" onclick="openDrawer('arrived','2006 Toyota Aurion','WPYC-S0000084','DF70VJ')">
+          <span class="card__time">Yesterday</span>
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">2006 Toyota Aurion</div>
+              <div class="card__ids"><span class="card__stock">WPYC-S0000084</span><span class="card__rego">DF70VJ</span></div>
+            </div>
+          </div>
+          <div class="card__specs">2GR0272236 · 6-speed automatic</div>
+          <div class="card__meta"><span class="card__dest-tag parts">PRE: PARTS</span></div>
+        </div>
+
+        <div class="card" onclick="openDrawer('arrived','1998 Holden Rodeo','JAS-A0000085','')">
+          <span class="card__time">Yesterday</span>
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">1998 Holden Rodeo</div>
+              <div class="card__ids"><span class="card__stock">JAS-A0000085</span><span class="card__rego">—</span></div>
+            </div>
+          </div>
+          <div class="card__specs">6 Cylinders, 3.2 Litre · Manual</div>
+        </div>
+
+        <div class="card" onclick="openDrawer('arrived','2017 Alfa Romeo Stelvio','JAS-A0000089','')">
+          <span class="card__time">Yesterday</span>
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">2017 Alfa Romeo Stelvio</div>
+              <div class="card__ids"><span class="card__stock">JAS-A0000089</span><span class="card__rego">—</span></div>
+            </div>
+          </div>
+          <div class="card__specs">4 Cylinders, 2.0 Litre · Sports Automatic</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== INSPECT & DEPOLLUTE (merged) ===== -->
+    <div class="column">
+      <div class="column__header">
+        <span class="column__dot" style="background:var(--stage-inspect)"></span>
+        <span class="column__title">Inspect & Depollute</span>
+        <span class="column__count">2</span>
+      </div>
+      <div class="column__body">
+
+        <div class="card" onclick="openDrawer('inspect','2003 Toyota Corolla','WPYC-S0000079','YNJ493')">
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">2003 Toyota Corolla</div>
+              <div class="card__ids"><span class="card__stock">WPYC-S0000079</span><span class="card__rego">YNJ493</span></div>
+            </div>
+          </div>
+          <div class="card__meta"><span class="card__meta-icon">👤</span> Unassigned · Day 2</div>
+          <div class="card__progress">
+            <div class="card__progress-track"><div class="card__progress-fill" style="width:35%;background:var(--stage-inspect);"></div></div>
+            <span class="card__progress-pct">35%</span>
+          </div>
+        </div>
+
+        <div class="card" onclick="openDrawer('inspect','2010 Nissan X-Trail','WPYC-S0000078','BI43ZQ')">
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">2010 Nissan X-Trail</div>
+              <div class="card__ids"><span class="card__stock">WPYC-S0000078</span><span class="card__rego">BI43ZQ</span></div>
+            </div>
+          </div>
+          <div class="card__meta"><span class="card__meta-icon">👤</span> Unassigned · Day 2</div>
+          <div class="card__progress">
+            <div class="card__progress-track"><div class="card__progress-fill" style="width:70%;background:var(--stage-inspect);"></div></div>
+            <span class="card__progress-pct">70%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== DECISION ===== -->
+    <div class="column">
+      <div class="column__header">
+        <span class="column__dot" style="background:var(--stage-decision)"></span>
+        <span class="column__title">Decision</span>
+        <span class="column__count">1</span>
+      </div>
+      <div class="column__body">
+        <div class="card" onclick="openDrawer('decision','2012 Holden Commodore','WPYC-S0000075','GHJ654')">
+          <div class="card__top">
+            <div class="card__thumb"><span class="card__thumb-icon">🚗</span></div>
+            <div class="card__info">
+              <div class="card__name">2012 Holden Commodore</div>
+              <div class="card__ids"><span class="card__stock">WPYC-S0000075</span><span class="card__rego">GHJ654</span></div>
+            </div>
+          </div>
+          <div class="card__meta"><span class="card__meta-icon">🕐</span> Day 3 · Awaiting</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Drawer Overlay -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer__header">
+    <div class="drawer__title" id="drawerTitle">Vehicle Name</div>
+    <div class="drawer__tags">
+      <span class="drawer__tag stock" id="drawerStock">STOCK</span>
+      <span class="drawer__tag rego" id="drawerRego">REGO</span>
+      <span class="drawer__tag stage" id="drawerStage">Stage</span>
+    </div>
+    <button class="drawer__close" onclick="closeDrawer()">&times;</button>
+  </div>
+  <div class="drawer__body" id="drawerBody"></div>
+  <div class="drawer__footer" id="drawerFooter"></div>
+</div>
+
+<script>
+function openDrawer(stage, name, stock, rego) {
+  document.getElementById('drawerTitle').textContent = name;
+  document.getElementById('drawerStock').textContent = stock;
+  document.getElementById('drawerRego').textContent = rego || '--';
+  const stageEl = document.getElementById('drawerStage');
+  const body = document.getElementById('drawerBody');
+  const footer = document.getElementById('drawerFooter');
+
+  const stageMap = { arrived: ['Arrived','var(--stage-arrived)'], inspect: ['Inspect & Depollute','var(--stage-inspect)'], decision: ['Decision','var(--stage-decision)'] };
+  stageEl.textContent = stageMap[stage][0];
+  stageEl.style.background = stageMap[stage][1];
+
+  if (stage === 'arrived') { body.innerHTML = arrivedHTML(); footer.innerHTML = arrivedFooter(); }
+  else if (stage === 'inspect') { body.innerHTML = inspectHTML(); footer.innerHTML = inspectFooter(); }
+  else { body.innerHTML = decisionHTML(); footer.innerHTML = decisionFooter(); }
+
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+function toggleAcc(el) { el.classList.toggle('expanded'); el.nextElementSibling.classList.toggle('show'); }
+function toggleBtn(btn) { const g = btn.parentElement; g.querySelectorAll('.toggle-btn').forEach(b => b.classList.add('off')); btn.classList.remove('off'); }
+function selectDest(btn) { btn.parentElement.querySelectorAll('.dest-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
+function toggleStatus(btn) { const g = btn.parentElement; g.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+
+function arrivedHTML() {
+  return `
+    <div class="annotation--new annotation">✨ <strong>NEW:</strong> Pre-select destination at Arrived stage (optional — just tags the vehicle)</div>
+    <div class="dest-select">
+      <div class="dest-select__label">Pre-select Destination <span class="new-badge">NEW</span></div>
+      <div class="dest-select__grid">
+        <div class="dest-btn" onclick="selectDest(this)"><div class="dest-btn__icon">🔧</div><div class="dest-btn__name">Parts</div></div>
+        <div class="dest-btn" onclick="selectDest(this)"><div class="dest-btn__icon">♻️</div><div class="dest-btn__name">Recycling</div></div>
+        <div class="dest-btn" onclick="selectDest(this)"><div class="dest-btn__icon">💰</div><div class="dest-btn__name">Sold</div></div>
+        <div class="dest-btn" onclick="selectDest(this)"><div class="dest-btn__icon">🗑️</div><div class="dest-btn__name">Scrap</div></div>
+      </div>
+    </div>
+    <div class="section-title">Vehicle Info</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="info-label">VIN</span><span class="info-value" style="font-family:var(--font-mono);font-size:11px;">KMHLC81DMEU084195</span></div>
+      <div class="info-row"><span class="info-label">State</span><span class="info-value">SA</span></div>
+      <div class="info-row"><span class="info-label">Engine</span><span class="info-value">4 cyl, 2.0L</span></div>
+      <div class="info-row"><span class="info-label">Transmission</span><span class="info-value">6-speed auto</span></div>
+      <div class="info-row"><span class="info-label">Colour</span><span class="info-value">White</span></div>
+      <div class="info-row"><span class="info-label">Body</span><span class="info-value">Wagon</span></div>
+    </div>
+    <div class="annotation" style="margin-top:12px;">⚠️ <strong>CHANGED:</strong> "Source" renamed to "Salesperson"</div>
+    <div class="section-title">Vehicle Assessment</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px;">
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">🔑</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Key</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">📄</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Papers</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">🚗</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Running</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">🪪</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">License</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">🔋</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Battery</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">⚗️</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Catalytic</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">🛞</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Wheels</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:6px;text-align:center;"><div style="font-size:16px;">⚙️</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Engine</div><div style="font-size:11px;font-weight:700;color:var(--color-success);">✓</div></div>
+    </div>
+
+    <div class="section-title">Order Details</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="info-label">Created by</span><span class="info-value">John</span></div>
+      <div class="info-row"><span class="info-label">Date</span><span class="info-value">16 Mar 2026</span></div>
+      <div class="info-row"><span class="info-label" style="color:var(--color-success);font-weight:700;">Salesperson</span><span class="info-value">Mason</span></div>
+    </div>
+    <div class="section-title">Value Estimates</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="info-label">Parts (est.)</span><span class="info-value" style="color:var(--color-success)">--</span></div>
+      <div class="info-row"><span class="info-label">Recycling (est.)</span><span class="info-value" style="color:var(--color-warning)">--</span></div>
+      <div class="info-row"><span class="info-label">Sold Complete (est.)</span><span class="info-value" style="color:var(--stage-decision)">--</span></div>
+      <div class="info-row"><span class="info-label">Scrap (est.)</span><span class="info-value">--</span></div>
+      <div class="info-row"><span class="info-label">Vehicle Weight</span><span class="info-value">--</span></div>
+      <div class="info-row"><span class="info-label">Cat Converter</span><span class="info-value" style="color:var(--stage-decision)">--</span></div>
+    </div>
+  `;
+}
+function arrivedFooter() {
+  return `
+    <div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn--success" onclick="alert('Direct dispatch: vehicle goes straight to pre-selected destination without inspection.')">Confirm & Dispatch</button>
+      <button class="btn btn--primary">Move to Inspect →</button>
+    </div>
+  `;
+}
+
+function inspectHTML() {
+  return `
+    <div class="annotation--new annotation">✨ <strong>NEW:</strong> Inspect & Depollute merged into one panel with collapsible accordion sections. All component items default to YES.</div>
+    <div class="accordion">
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> Photos</div><span class="acc-status">0 / 8</span></div>
+        <div class="acc-content">
+          <div class="photo-grid">
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Front</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Rear</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Left</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Right</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Engine</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Interior</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">Odometer</span></div>
+            <div class="photo-cell"><span class="photo-cell__icon">📷</span><span class="photo-cell__label">VIN</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-header expanded" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> Component Verification</div><span class="acc-status done">6 / 6 ✓</span></div>
+        <div class="acc-content show">
+          <div class="annotation" style="margin-bottom:8px;">⚠️ <strong>CHANGED:</strong> Simplified to Yes/No (was 5 options). All default to YES. "Other" removed.</div>
+          <div class="check-row"><span class="check-label">Vehicle Complete</span><div class="toggle-group"><button class="toggle-btn yes" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no off" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Engine</span><div class="toggle-group"><button class="toggle-btn yes" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no off" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Transmission</span><div class="toggle-group"><button class="toggle-btn yes" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no off" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Wheels / Mags</span><div class="toggle-group"><button class="toggle-btn yes" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no off" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Battery</span><div class="toggle-group"><button class="toggle-btn yes" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no off" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Catalytic Converter</span><div class="toggle-group"><button class="toggle-btn yes" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no off" onclick="toggleBtn(this)">NO</button></div></div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> Fluid Removal</div><span class="acc-status">0 / 7</span></div>
+        <div class="acc-content">
+          <div class="check-row"><span class="check-label">🛢 Engine Oil</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">❄️ Coolant</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">🔴 Brake Fluid</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">🟡 Power Steering</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">⚙️ Transmission</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">💧 Washer Fluid</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">⛽ Fuel</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">In Progress</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> Component Removal</div><span class="acc-status">0 / 5</span></div>
+        <div class="acc-content">
+          <div class="check-row"><span class="check-label">🔋 Battery</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">⚗️ CAT Converter</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">🔵 LPG Tank</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">❄️ A/C Gas</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+          <div class="check-row"><span class="check-label">💥 Airbags</span><div class="status-group"><button class="status-btn" onclick="toggleStatus(this)">Pending</button><button class="status-btn" onclick="toggleStatus(this)">Done</button></div></div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> CAT Converter Recording</div><span class="acc-status">—</span></div>
+        <div class="acc-content">
+          <div class="annotation" style="margin-bottom:8px;">⚠️ <strong>CHANGED:</strong> Serial number now optional. Multiple converters supported (dynamic inputs based on count).</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <div style="flex:1;"><label style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Count</label><input type="number" value="1" min="1" max="5" style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:var(--radius-md);font-size:12px;margin-top:3px;"></div>
+            <div style="flex:2;"><label style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Type</label><select style="width:100%;padding:5px 8px;border:1px solid var(--border-light);border-radius:var(--radius-md);font-size:12px;margin-top:3px;"><option>OEM</option><option>Aftermarket</option></select></div>
+          </div>
+          <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:10px;">
+            <div style="font-size:11px;font-weight:600;margin-bottom:5px;">Converter #1</div>
+            <div style="display:flex;gap:6px;">
+              <input placeholder="Serial Number (optional)" style="flex:1;padding:5px 8px;border:1px solid var(--border-light);border-radius:var(--radius-md);font-size:11px;">
+              <button style="padding:5px 12px;border:1px dashed var(--border-light);border-radius:var(--radius-md);background:#fff;cursor:pointer;font-size:15px;">📷</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> Damage Assessment</div><span class="acc-status">—</span></div>
+        <div class="acc-content">
+          <div class="annotation--remove annotation" style="margin-bottom:8px;">🗑️ <strong>REMOVED:</strong> "Flood Damage" (duplicate of Water Damage)</div>
+          <div class="check-row"><span class="check-label">Structural Damage</span><div class="toggle-group"><button class="toggle-btn yes off" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Water Damage</span><div class="toggle-group"><button class="toggle-btn yes off" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no" onclick="toggleBtn(this)">NO</button></div></div>
+          <div class="check-row"><span class="check-label">Fire Damage</span><div class="toggle-group"><button class="toggle-btn yes off" onclick="toggleBtn(this)">YES</button><button class="toggle-btn no" onclick="toggleBtn(this)">NO</button></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic;">* Detail fields only appear when YES is selected</div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)"><div class="acc-title"><span class="acc-arrow">▶</span> Notes</div><span class="acc-status">—</span></div>
+        <div class="acc-content">
+          <textarea placeholder="Describe any damage, missing parts, or special notes..." style="width:100%;padding:8px;border:1px solid var(--border-light);border-radius:var(--radius-md);font-size:12px;resize:vertical;min-height:60px;font-family:inherit;"></textarea>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function inspectFooter() {
+  return `<button class="btn btn--ghost">← Back to Arrived</button><button class="btn btn--primary">Move to Decision →</button>`;
+}
+
+function decisionHTML() {
+  return `
+    <div class="section-title">Value Estimates</div>
+    <div class="info-grid" style="margin-bottom:16px;">
+      <div class="info-row"><span class="info-label">Parts (est.)</span><span class="info-value" style="color:var(--color-success)">$2,400</span></div>
+      <div class="info-row"><span class="info-label">Recycling (est.)</span><span class="info-value" style="color:var(--color-warning)">$350</span></div>
+      <div class="info-row"><span class="info-label">Sold Complete (est.)</span><span class="info-value" style="color:var(--stage-decision)">$3,500</span></div>
+      <div class="info-row"><span class="info-label">Scrap (est.)</span><span class="info-value">$180</span></div>
+      <div class="info-row"><span class="info-label">Vehicle Weight</span><span class="info-value">1,450 kg</span></div>
+      <div class="info-row"><span class="info-label">Cat Converter</span><span class="info-value" style="color:var(--stage-decision)">$120</span></div>
+    </div>
+    <div class="section-title">Select Destination</div>
+    <div class="dest-select__grid" style="margin-bottom:16px;">
+      <div class="dest-btn" onclick="selectDest(this)" style="padding:14px 4px;"><div class="dest-btn__icon" style="font-size:26px;">🔧</div><div class="dest-btn__name" style="font-size:11px;">Parts</div></div>
+      <div class="dest-btn" onclick="selectDest(this)" style="padding:14px 4px;"><div class="dest-btn__icon" style="font-size:26px;">♻️</div><div class="dest-btn__name" style="font-size:11px;">Recycling</div></div>
+      <div class="dest-btn" onclick="selectDest(this)" style="padding:14px 4px;"><div class="dest-btn__icon" style="font-size:26px;">💰</div><div class="dest-btn__name" style="font-size:11px;">Sold Complete</div></div>
+      <div class="dest-btn" onclick="selectDest(this)" style="padding:14px 4px;"><div class="dest-btn__icon" style="font-size:26px;">🗑️</div><div class="dest-btn__name" style="font-size:11px;">Scrap</div></div>
+    </div>
+  `;
+}
+function decisionFooter() {
+  return `<button class="btn btn--ghost">← Back</button><button class="btn btn--success">Confirm & Dispatch</button>`;
+}
+</script>
+</body>
+</html>

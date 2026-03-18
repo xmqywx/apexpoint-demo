@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apexpoint — Proposed Changes</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: #f8f8f6; color: #1a1523; line-height: 1.6; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Header */
+  .doc-header { text-align: center; margin-bottom: 40px; padding-bottom: 24px; border-bottom: 2px solid #e8e8e4; }
+  .doc-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .doc-header .subtitle { color: #6f6e77; font-size: 15px; }
+  .doc-header .date { color: #8b8a93; font-size: 13px; margin-top: 4px; }
+
+  /* Demo embed */
+  .demo-embed { margin-bottom: 48px; }
+  .demo-embed__label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #3b82f6; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .demo-embed__label::before { content: ''; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .demo-embed__frame { border: 2px solid #e8e8e4; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  .demo-embed__frame iframe { width: 100%; height: 85vh; border: none; display: block; }
+  .demo-embed__hint { font-size: 12px; color: #8b8a93; margin-top: 8px; text-align: center; }
+
+  /* Section */
+  .section { margin-bottom: 40px; }
+  .section-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #3b82f6; color: #fff; border-radius: 8px; font-size: 13px; font-weight: 800; margin-right: 10px; }
+  .section h2 { font-size: 20px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; }
+  .section-desc { color: #6f6e77; font-size: 14px; margin-bottom: 16px; }
+
+  /* Change item */
+  .change { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 10px; border: 1px solid #e8e8e4; }
+  .change-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+  .change-id { background: #ef4444; color: #fff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  .change-id.green { background: #22c55e; }
+  .change-id.blue { background: #3b82f6; }
+  .change-id.orange { background: #f59e0b; }
+  .change-id.purple { background: #8b5cf6; }
+  .change-title { font-size: 15px; font-weight: 700; }
+  .change-body { font-size: 13px; color: #6f6e77; margin-top: 4px; }
+  .change-body strong { color: #1a1523; }
+
+  /* Callout */
+  .callout { display: flex; gap: 8px; margin: 8px 0; padding: 10px 14px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0; font-size: 13px; }
+  .callout.green { background: #dcfce7; border-left-color: #22c55e; }
+  .callout.blue { background: #dbeafe; border-left-color: #3b82f6; }
+
+  /* Flow */
+  .flow { display: flex; align-items: center; gap: 4px; margin: 10px 0; flex-wrap: wrap; }
+  .flow-step { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; background: #f0f0ec; color: #6f6e77; }
+  .flow-step.active { background: #3b82f6; color: #fff; }
+  .flow-step.removed { background: #fee2e2; color: #991b1b; text-decoration: line-through; }
+  .flow-step.new { background: #dcfce7; color: #166534; border: 2px dashed #22c55e; }
+  .flow-arrow { color: #8b8a93; font-size: 16px; }
+
+  /* Compare */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .compare-col { border-radius: 10px; overflow: hidden; border: 1px solid #e8e8e4; }
+  .compare-col.before { border-color: #fecaca; }
+  .compare-col.after { border-color: #bbf7d0; }
+  .compare-label { padding: 6px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .compare-col.before .compare-label { background: #fee2e2; color: #991b1b; }
+  .compare-col.after .compare-label { background: #dcfce7; color: #166534; }
+  .compare-body { padding: 12px; font-size: 12px; background: #fff; }
+
+  /* UI elements */
+  .ui-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f0f0ec; }
+  .ui-row:last-child { border-bottom: none; }
+  .ui-label { font-size: 12px; color: #6f6e77; width: 120px; flex-shrink: 0; }
+  .ui-value { font-size: 12px; font-weight: 600; }
+  .ui-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #e8e8e4; background: #fff; }
+  .ui-btn.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+  /* Mockup */
+  .mockup { background: #141414; border-radius: 10px; overflow: hidden; margin: 14px 0; }
+  .mockup-label { background: #262626; color: #a3a3a3; font-size: 11px; font-weight: 600; padding: 6px 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .mockup-body { padding: 14px; }
+
+  /* Priority */
+  .priority { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .priority.high { background: #fee2e2; color: #991b1b; }
+  .priority.medium { background: #fef3c7; color: #92400e; }
+  .priority.low { background: #f0f0ec; color: #6f6e77; }
+
+  /* Table */
+  .summary-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .summary-table th { text-align: left; padding: 8px 12px; background: #f6f6f3; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6f6e77; border-bottom: 2px solid #e8e8e4; }
+  .summary-table td { padding: 8px 12px; border-bottom: 1px solid #f0f0ec; }
+
+  /* Footer */
+  .doc-footer { margin-top: 48px; padding-top: 24px; border-top: 2px solid #e8e8e4; text-align: center; color: #8b8a93; font-size: 13px; }
+
+  /* Check mockup */
+  .check-btn { padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .check-btn.on { background: #22c55e; color: #fff; }
+  .check-btn.off { background: #262626; color: #737373; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ===== HEADER ===== -->
+<div class="doc-header">
+  <h1>Apexpoint — Proposed Changes</h1>
+  <div class="subtitle">Based on meeting feedback — for review and confirmation</div>
+  <div class="date">Date: 18 March 2026 &nbsp;|&nbsp; Meeting: Mason &amp; Chris &nbsp;|&nbsp; Version: 1.0</div>
+</div>
+
+<!-- ===== INTERACTIVE DEMO ===== -->
+<div class="demo-embed">
+  <div class="demo-embed__label">Interactive Demo — click vehicle cards to see proposed panels</div>
+  <div class="demo-embed__frame">
+    <iframe src="preview.html"></iframe>
+  </div>
+  <div class="demo-embed__hint">Click any vehicle card above to see the new Arrived panel (pre-select destination), Inspect &amp; Depollute panel (accordion layout), and Decision panel.</div>
+</div>
+
+<!-- ===== SECTION 1: WORKFLOW ===== -->
+<div class="section">
+  <h2><span class="section-num">1</span> New Arrivals — Workflow Changes</h2>
+  <div class="section-desc">Restructure the pipeline to reduce clicks and allow early decision-making.</div>
+
+  <div class="change">
+    <div class="change-header">
+      <span class="change-id">1.1</span>
+      <span class="change-title">Merge Inspect + Depollute into one step</span>
+    </div>
+    <div class="change-body">
+      Combine into a <strong>single "Inspect & Depollute" stage</strong> using collapsible accordion sections (like Workflow History). Each section shows a header with completion status — tap to expand. <strong>All sections visible on one screen without scrolling.</strong>
+    </div>
+    <div class="flow">
+      <span class="flow-step active">Arrived</span><span class="flow-arrow">→</span>
+      <span class="flow-step removed">Inspect</span><span class="flow-arrow">→</span>
+      <span class="flow-step removed">Depollute</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Decision</span>
+    </div>
+    <div style="text-align:center;color:#6f6e77;font-size:12px;margin:4px 0;">▼ becomes ▼</div>
+    <div class="flow">
+      <span class="flow-step active">Arrived</span><span class="flow-arrow">→</span>
+      <span class="flow-step new">Inspect & Depollute</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Decision</span>
+    </div>
+    <div class="callout green">
+      <span>✅</span> 7 collapsible sections fit on one screen. Component Verification defaults to all YES — zero clicks for a standard vehicle. See demo above.
+    </div>
+  </div>
+
+  <div class="change">
+    <div class="change-header">
+      <span class="change-id">1.2</span>
+      <span class="change-title">Pre-select destination from Arrived stage</span>
+    </div>
+    <div class="change-body">
+      <strong>Allow pre-selecting destination (Parts / Recycling / Sold / Scrap) at any stage.</strong> This only tags the vehicle — does not skip steps. Vehicle still follows normal flow.
+    </div>
+    <div class="callout blue">
+      <span>💡</span> Example: A salesperson buys a car and knows it will be sold. They pre-select "Sold Complete" at arrival, but still complete inspection if needed.
+    </div>
+  </div>
+
+  <div class="change">
+    <div class="change-header">
+      <span class="change-id">1.3</span>
+      <span class="change-title">Allow direct dispatch (skip inspection)</span>
+    </div>
+    <div class="change-body">
+      From Arrived stage, <strong>directly send vehicle to destination</strong> without going through Inspect &amp; Depollute. For vehicles that don't need processing.
+    </div>
+  </div>
+
+  <div class="change">
+    <div class="change-header">
+      <span class="change-id blue">1.4</span>
+      <span class="change-title">Add "Complete Cars in Yard" section</span>
+    </div>
+    <div class="change-body">
+      Show <strong>vehicles that completed new arrivals</strong> but are still in the yard. Currently these disappear from view.
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: ARRIVED ===== -->
+<div class="section">
+  <h2><span class="section-num">2</span> New Arrivals — Arrived Stage</h2>
+
+  <div class="change">
+    <div class="change-header">
+      <span class="change-id green">2.1</span>
+      <span class="change-title">Change "Source" to "Salesperson"</span>
+    </div>
+    <div class="change-body">
+      <strong>Rename "Source" to "Salesperson"</strong> — the person who sourced the vehicle, not where it came from.
+    </div>
+    <div class="compare">
+      <div class="compare-col before"><div class="compare-label">Current</div><div class="compare-body"><div class="ui-row"><span class="ui-label" style="color:#ef4444;font-weight:700">Source</span><span class="ui-value">—</span></div></div></div>
+      <div class="compare-col after"><div class="compare-label">Proposed</div><div class="compare-body"><div class="ui-row"><span class="ui-label" style="color:#22c55e;font-weight:700">Salesperson</span><span class="ui-value">Mason</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="change">
+    <div class="change-header">
+      <span class="change-id green">2.2</span>
+      <span class="change-title">Kanban cards — reduce height for ~20 cars per screen</span>
+    </div>
+    <div class="change-body">
+      Reduce card height to <strong>~1/4 to 1/2 of current size</strong> so ~20 vehicles visible without scrolling. Keep essential info (image, name, stock, rego, engine specs). Move timestamp to top-right corner. See demo above for the proposed card style.
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: INSPECT ===== -->
+<div class="section">
+  <h2><span class="section-num">3</span> Inspect Checklist — Redesign</h2>
+  <div class="section-desc">Currently requires 15-20 clicks. Target: under 5 clicks for a standard vehicle.</div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id">3.1</span><span class="change-title">All items default to YES</span></div>
+    <div class="change-body">Vehicle Complete, Engine, Transmission, Wheels, Battery, Catalytic Converter all <strong>default to "Yes"</strong>. Operator only clicks to change items that are NOT present.</div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id">3.2</span><span class="change-title">Simplify to Yes/No toggle</span></div>
+    <div class="change-body">Replace 5-option buttons (Good/Fair/Poor/Missing/N/A) with <strong>simple Yes / No toggles</strong>. No per-item notes — one unified Notes section at the bottom.</div>
+    <div class="compare">
+      <div class="compare-col before"><div class="compare-label">Current — 5 options + notes per item</div><div class="compare-body" style="display:flex;gap:4px;flex-wrap:wrap;"><span class="ui-btn" style="font-size:10px">Good</span><span class="ui-btn" style="font-size:10px">Fair</span><span class="ui-btn" style="font-size:10px">Poor</span><span class="ui-btn" style="font-size:10px">Missing</span><span class="ui-btn" style="font-size:10px">N/A</span></div></div>
+      <div class="compare-col after"><div class="compare-label">Proposed — Yes/No only</div><div class="compare-body" style="display:flex;gap:4px;"><span class="check-btn on" style="padding:4px 14px;">YES</span><span class="check-btn off" style="padding:4px 14px;background:#fee2e2;color:#991b1b;">NO</span></div></div>
+    </div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id">3.3</span><span class="change-title">Conditional display — Damage section</span></div>
+    <div class="change-body"><strong>Structural Damage = No → hide detail fields.</strong> Only show damage areas, photos when "Yes" is selected.</div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id">3.4</span><span class="change-title">Remove "Flood Damage" (duplicate of Water Damage)</span></div>
+    <div class="change-body">Keep only <strong>"Water Damage"</strong>.</div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id">3.5</span><span class="change-title">Remove "Other" component item</span></div>
+    <div class="change-body">Not needed. <strong>Remove it.</strong></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: CAT CONVERTER ===== -->
+<div class="section">
+  <h2><span class="section-num">4</span> Catalytic Converter</h2>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id orange">4.1</span><span class="change-title">Serial Number — not mandatory</span></div>
+    <div class="change-body"><strong>Make optional</strong> — some converters don't have readable serial numbers.</div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id orange">4.2</span><span class="change-title">Multiple converters: dynamic inputs based on count</span></div>
+    <div class="change-body">When Count = 2+, <strong>dynamically show that many serial number + photo upload groups</strong>. See demo above (CAT Converter Recording section).</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 5: RECYCLING ===== -->
+<div class="section">
+  <h2><span class="section-num">5</span> Recycling Module</h2>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id purple">5.1</span><span class="change-title">Add inspection checklist</span></div>
+    <div class="change-body">Add the <strong>same Yes/No component checklist</strong>: Vehicle Complete, Engine, Transmission, Wheels, Battery, Catalytic Converter.</div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id purple">5.2</span><span class="change-title">Add label printing</span></div>
+    <div class="change-body">Add <strong>label generation and printing</strong> (QR label like New Arrivals Decision panel).</div>
+  </div>
+
+  <div class="change">
+    <div class="change-header"><span class="change-id purple">5.3</span><span class="change-title">Add Kanban view</span></div>
+    <div class="change-body">Add <strong>Kanban board view</strong> with toggle between List and Kanban (like New Arrivals).</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: SOLD COMPLETE ===== -->
+<div class="section">
+  <h2><span class="section-num">6</span> Sold Complete</h2>
+  <div class="change">
+    <div class="change-header"><span class="change-id green">6.1</span><span class="change-title">Buyer Details — already implemented ✓</span></div>
+    <div class="change-body">Buyer details (Name, Company, Phone, Email, Address, ABN) and invoice system <strong>already exist</strong>.<br><strong>Please confirm:</strong> Is anything additional needed?</div>
+    <div class="callout green"><span>✅</span> Already complete. Click any vehicle in Sold Complete to see.</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 7: PARTS ===== -->
+<div class="section">
+  <h2><span class="section-num">7</span> Parts Module</h2>
+  <div class="change">
+    <div class="change-header"><span class="change-id green">7.1</span><span class="change-title">Default view: By Vehicle</span></div>
+    <div class="change-body">Change default tab from Pipeline to <strong>"By Vehicle"</strong>.</div>
+    <div class="compare">
+      <div class="compare-col before"><div class="compare-label">Current</div><div class="compare-body" style="display:flex;gap:4px;"><span class="ui-btn primary" style="font-size:10px">Pipeline</span><span class="ui-btn" style="font-size:10px">Inventory</span><span class="ui-btn" style="font-size:10px">By Vehicle</span></div></div>
+      <div class="compare-col after"><div class="compare-label">Proposed</div><div class="compare-body" style="display:flex;gap:4px;"><span class="ui-btn" style="font-size:10px">Pipeline</span><span class="ui-btn" style="font-size:10px">Inventory</span><span class="ui-btn primary" style="font-size:10px">By Vehicle</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 8: CONCEPT CONFIRMATION ===== -->
+<div class="section">
+  <h2><span class="section-num">8</span> Concept Confirmation — Please Verify</h2>
+  <div class="section-desc">To ensure we're building the right thing, please confirm our understanding.</div>
+
+  <div class="change" style="border: 2px solid #f59e0b; background: #fffbeb;">
+    <div class="change-header"><span class="change-id orange">8.1</span><span class="change-title">Vehicle destination flow — is this correct?</span></div>
+    <div class="change-body">The <strong>Decision stage</strong> routes each vehicle to ONE of these 4 destinations:</div>
+    <div style="background:#fff;border-radius:8px;padding:16px;margin:12px 0;border:1px solid #e8e8e4;">
+      <div style="text-align:center;margin-bottom:12px;">
+        <span style="background:#3b82f6;color:#fff;padding:6px 16px;border-radius:8px;font-size:13px;font-weight:700;">Vehicle Arrives</span>
+        <div style="color:#8b8a93;margin:6px 0;">↓ Inspect & Depollute (or skip) ↓</div>
+        <span style="background:#8b5cf6;color:#fff;padding:6px 16px;border-radius:8px;font-size:13px;font-weight:700;">Decision: Choose Destination</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+        <div style="background:#dcfce7;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:14px;font-weight:700;color:#166534;">Parts</div><div style="font-size:11px;color:#166534;margin-top:4px;">Strip the car, sell individual parts</div></div>
+        <div style="background:#fef3c7;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:14px;font-weight:700;color:#92400e;">Recycling</div><div style="font-size:11px;color:#92400e;margin-top:4px;">Whole car to metal recycler</div></div>
+        <div style="background:#ede9fe;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:14px;font-weight:700;color:#6d28d9;">Sold Complete</div><div style="font-size:11px;color:#6d28d9;margin-top:4px;">Sell the whole car as-is</div></div>
+        <div style="background:#f1f5f9;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:14px;font-weight:700;color:#475569;">Scrap</div><div style="font-size:11px;color:#475569;margin-top:4px;">Scrap metal disposal</div></div>
+      </div>
+    </div>
+    <div class="callout"><span>⚠️</span> <strong>Please confirm:</strong> Are these 4 correct? Any overlap between Recycling and Scrap?</div>
+  </div>
+
+  <div class="change" style="border: 2px solid #f59e0b; background: #fffbeb;">
+    <div class="change-header"><span class="change-id orange">8.2</span><span class="change-title">Overseas is a separate business module — correct?</span></div>
+    <div class="change-body"><strong>Overseas is NOT a vehicle destination</strong> from New Arrivals. It is a separate module for container management, overseas buyers, and export tracking.</div>
+    <div style="background:#fff;border-radius:8px;padding:16px;margin:12px 0;border:1px solid #e8e8e4;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:6px;">Overseas Module manages:</div><ul style="font-size:12px;color:#6f6e77;list-style:disc;padding-left:16px;line-height:1.8;"><li>Container management</li><li>Overseas buyer database</li><li>Parts assigned to containers</li><li>Export tracking</li></ul></div>
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:6px;">NOT the same as:</div><ul style="font-size:12px;color:#6f6e77;list-style:disc;padding-left:16px;line-height:1.8;"><li><s>Sending a whole car overseas</s></li><li><s>A destination in Decision</s></li></ul></div>
+      </div>
+    </div>
+    <div class="callout"><span>⚠️</span> <strong>Please confirm:</strong> Overseas will be developed separately after main vehicle flow is complete.</div>
+  </div>
+
+  <div class="change" style="border: 2px solid #f59e0b; background: #fffbeb;">
+    <div class="change-header"><span class="change-id orange">8.3</span><span class="change-title">Pipeline is flexible — Decision can happen at any stage</span></div>
+    <div class="change-body">The kanban still shows 3 columns (Arrived → Inspect & Depollute → Decision), but <strong>Decision is not locked to the third column</strong>. A vehicle can be dispatched directly from Arrived if inspection is not needed.</div>
+    <div class="callout"><span>⚠️</span> <strong>Please confirm:</strong> Is this the intended workflow flexibility?</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 9: OVERSEAS ===== -->
+<div class="section">
+  <h2><span class="section-num">9</span> Overseas Module</h2>
+  <div class="change">
+    <div class="change-header"><span class="change-id orange">9.1</span><span class="change-title">Temporarily hide from navigation</span></div>
+    <div class="change-body"><strong>Hide Overseas</strong> from nav. Do not delete — just disable. Re-enable after workflow is clarified.</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 10: FUTURE ===== -->
+<div class="section">
+  <h2><span class="section-num">10</span> Future Work (not in this round)</h2>
+  <div class="change">
+    <div class="change-header"><span class="change-id" style="background:#6f6e77;">10.1</span><span class="change-title">Migrate Scheduling & Booking from old system</span></div>
+    <div class="change-body">Bring existing scheduling/booking from legacy system. <strong>To be planned separately.</strong></div>
+  </div>
+  <div class="change">
+    <div class="change-header"><span class="change-id" style="background:#6f6e77;">10.2</span><span class="change-title">Re-enable Overseas module</span></div>
+    <div class="change-body">Once workflow is defined, re-enable and complete. <strong>To be discussed.</strong></div>
+  </div>
+</div>
+
+<!-- ===== SUMMARY ===== -->
+<div class="section">
+  <h2>Summary</h2>
+  <table class="summary-table">
+    <thead><tr><th>#</th><th>Change</th><th>Module</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td>1.1</td><td>Merge Inspect + Depollute (accordion)</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>1.2</td><td>Pre-select destination from Arrived</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>1.3</td><td>Direct dispatch (skip inspection)</td><td>New Arrivals</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>1.4</td><td>Add "Complete Cars in Yard"</td><td>New Arrivals</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>2.1</td><td>Source → Salesperson</td><td>New Arrivals</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>2.2</td><td>Compact kanban cards (~20/screen)</td><td>New Arrivals</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>3.1</td><td>Default all items to YES</td><td>Inspect</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>3.2</td><td>Yes/No toggle + unified Notes</td><td>Inspect</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>3.3</td><td>Conditional damage display</td><td>Inspect</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>3.4</td><td>Remove Flood Damage</td><td>Inspect</td><td><span class="priority low">Low</span></td></tr>
+      <tr><td>3.5</td><td>Remove "Other" item</td><td>Inspect</td><td><span class="priority low">Low</span></td></tr>
+      <tr><td>4.1</td><td>Serial number optional</td><td>CAT Converter</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>4.2</td><td>Multiple converter inputs</td><td>CAT Converter</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>5.1</td><td>Add inspection checklist</td><td>Recycling</td><td><span class="priority high">High</span></td></tr>
+      <tr><td>5.2</td><td>Add label printing</td><td>Recycling</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>5.3</td><td>Add Kanban view</td><td>Recycling</td><td><span class="priority medium">Medium</span></td></tr>
+      <tr><td>6.1</td><td>Buyer details (done ✓)</td><td>Sold Complete</td><td><span class="priority low">Done</span></td></tr>
+      <tr><td>7.1</td><td>Default to By Vehicle</td><td>Parts</td><td><span class="priority low">Low</span></td></tr>
+      <tr><td>9.1</td><td>Hide Overseas from nav</td><td>Overseas</td><td><span class="priority low">Low</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="doc-footer">
+  <p><strong>Please review each item and confirm.</strong> Reply with any changes or questions.</p>
+  <p style="margin-top: 8px;">Apexpoint Development Team</p>
+</div>
+
+</div>
+</body>
+</html>
